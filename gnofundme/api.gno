@@ -6,6 +6,16 @@ import (
 	"gno.land/p/demo/ufmt"
 )
 
+// GetCampaignIDFromName returns the campaign ID associated with a
+// user-specified campaign name.
+func GetCampaignIDFromName(name string) (CampaignID, bool) {
+	found, exists := gCampaignByName.Get(name)
+	if !exists {
+		return -1, false
+	}
+	return found.(*Campaign).id, true
+}
+
 // CreateCampaign creates a new campaign with a user-specified title,
 // description, goal, and days.
 func CreateCampaign(title, desc string, goal, days int) CampaignID {
@@ -52,4 +62,24 @@ func MakePledge(cid campaignIDKey, amount int) PledgeID {
 	}
 
 	return campaign.addPledge(caller, amount)
+}
+
+// EditCampaign edits a user-specified campaign's title and/or description.
+func EditCampaign(cid CampaignID, title, description string) {
+	std.AssertOriginCall()
+	if title == "" && description == "" {
+		panic("both title and description cannot be empty")
+	}
+
+	campaign := getCampaign(cid)
+	if campaign == nil {
+		panic("campaign does not exist")
+	}
+
+	caller := std.GetOrigCaller()
+	if !campaign.HasPermission(caller, EditPermission) {
+		panic("unauthorized")
+	}
+
+	campaign.update(title, description)
 }

@@ -32,6 +32,7 @@ type Campaign struct {
 	end           time.Time   // The time the campaign will end.
 	pledges       avl.Tree    // PledgeID -> Pledge
 	pledgeCounter uint64      // increments Pledge.id
+	updatedAt     time.Time   // The time the campaign was last updated.
 }
 
 // newCampaign creates a new campaign.
@@ -68,8 +69,33 @@ func (c *Campaign) addPledge(backer std.Address, amount int) PledgeID {
 	return pid
 }
 
+func (c *Campaign) update(title, description string) {
+	if title != "" {
+		c.title = title
+	}
+	if description != "" {
+		c.description = description
+	}
+	c.updatedAt = time.Now()
+}
+
 // incGetPledgeID increments the pledge counter and returns the new value.
 func (c *Campaign) incGetPledgeID() PledgeID {
 	c.pledgeCounter++
 	return PledgeID(c.pledgeCounter)
+}
+
+// hasPermission returns whether the given address has the given permission.
+//
+// TODO: should there be a 'delete' permission?
+func (c *Campaign) hasPermission(addr std.Address, perm Permission) bool {
+	if c.creator != addr {
+		return false
+	}
+	switch perm {
+	case EditPermission:
+		return true
+	default:
+		return false
+	}
 }

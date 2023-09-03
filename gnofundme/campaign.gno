@@ -21,16 +21,17 @@ func (cid CampaignID) String() string {
 // meet their goal in order to receive the pledged funds: at the end of the
 // specified duration, all funds are transferred to the creator.
 type Campaign struct {
-	id          CampaignID  // The campaign's unique ID.
-	creator     std.Address // The address of the campaign creator.
-	title       string      // The title of the campaign.
-	prefix      string      // The prefix of the campaign's URL.
-	description string      // A description of the campaign.
-	goal        int         // The amount the campaign is trying to raise.
-	pledged     int         // The amount pledged to the campaign so far.
-	start       time.Time   // The time the campaign was created.
-	end         time.Time   // The time the campaign will end.
-	pledges     avl.Tree    // User -> Amount
+	id            CampaignID  // The campaign's unique ID.
+	creator       std.Address // The address of the campaign creator.
+	title         string      // The title of the campaign.
+	prefix        string      // The prefix of the campaign's URL.
+	description   string      // A description of the campaign.
+	goal          int         // The amount the campaign is trying to raise.
+	pledged       int         // The amount pledged to the campaign so far.
+	start         time.Time   // The time the campaign was created.
+	end           time.Time   // The time the campaign will end.
+	pledges       avl.Tree    // PledgeID -> Pledge
+	pledgeCounter uint64      // increments Pledge.id
 }
 
 // newCampaign creates a new campaign.
@@ -56,14 +57,21 @@ func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string,
 	}
 }
 
-func (c *Campaign) pledge(user string, amount int) {
+// addPledge adds a pledge to the campaign.
+func (c *Campaign) addPledge(backer std.Address, amount int) *Pledge {
 	c.pledged += amount
-	// Check if the user has already pledged to this campaign. If so, add the
-	// new amount to their existing pledge.
-	//
-	// TODO: should we limit users to one pledge per campaign?
-	if exists := c.pledges.Has(user); exists {
-		amount += c.pledges.Get(user).(int)
-	}
-	c.pledges.Set(user, amount)
+
+	pid := c.incGetPledgeID()
+	key := pledgeIDKey(pid)
+
+	pledge := newPledge(pid, user, amount)
+	c.pledges.Set(key, pledge)
+
+	return pledge
+}
+
+// incGetPledgeID increments the pledge counter and returns the new value.
+func (c *Campaign) incGetPledgeID() PledgeID {
+	c.pledgeCounter++
+	return PledgeID(c.pledgeCounter)
 }

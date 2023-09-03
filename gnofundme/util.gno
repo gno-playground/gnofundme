@@ -39,6 +39,10 @@ func campaignIDKey(cid CampaignID) string {
 	return padZero(uint64(bid), 10)
 }
 
+func pledgeIDKey(pid CampaignID) string {
+	return padZero(uint64(pid), 10)
+}
+
 func padLeft(str string, length int) string {
 	if len(str) >= length {
 		return str

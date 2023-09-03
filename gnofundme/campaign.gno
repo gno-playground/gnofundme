@@ -26,8 +26,8 @@ type Campaign struct {
 	title         string      // The title of the campaign.
 	prefix        string      // The prefix of the campaign's URL.
 	description   string      // A description of the campaign.
-	goal          int         // The amount the campaign is trying to raise.
-	pledged       int         // The amount pledged to the campaign so far.
+	goal          std.Coins   // The amount the campaign is trying to raise.
+	pledged       std.Coins   // The amount pledged to the campaign so far.
 	start         time.Time   // The time the campaign was created.
 	end           time.Time   // The time the campaign will end.
 	pledges       avl.Tree    // PledgeID -> Pledge
@@ -36,7 +36,7 @@ type Campaign struct {
 }
 
 // newCampaign creates a new campaign.
-func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string, goal, days int) *Campaign {
+func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string, goal std.Coins, days int) *Campaign {
 	// TODO: should we put restrictions on `title` and `description`?
 	//
 	// i.e., min/max length?
@@ -59,7 +59,7 @@ func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string,
 }
 
 // addPledge adds a pledge to the campaign.
-func (c *Campaign) addPledge(backer std.Address, amount int) PledgeID {
+func (c *Campaign) addPledge(backer std.Address, amount std.Coins) PledgeID {
 	c.pledged += amount
 
 	pid := c.incGetPledgeID()

@@ -18,7 +18,7 @@ func GetCampaignIDFromName(name string) (CampaignID, bool) {
 
 // CreateCampaign creates a new campaign with a user-specified title,
 // description, goal, and days.
-func CreateCampaign(title, desc string, goal, days int) CampaignID {
+func CreateCampaign(title, desc string, goal std.Coins, days int) CampaignID {
 	std.AssertOriginCall()
 
 	caller := std.GetOrigCaller()
@@ -39,7 +39,7 @@ func CreateCampaign(title, desc string, goal, days int) CampaignID {
 }
 
 // MakePledge pledges a user-specified amount to a user-specified campaign.
-func MakePledge(cid campaignIDKey, amount int) PledgeID {
+func MakePledge(cid campaignIDKey, amount std.Coins) PledgeID {
 	std.AssertOriginCall()
 
 	if amount < 0 {

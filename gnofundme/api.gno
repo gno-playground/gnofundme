@@ -6,19 +6,19 @@ import (
 	"gno.land/p/demo/ufmt"
 )
 
-// GetCampaignIDFromName returns the campaign ID associated with a
+// GetCampaignIDFromTitle returns the campaign ID associated with a
 // user-specified campaign name.
-func GetCampaignIDFromName(name string) (CampaignID, bool) {
-	found, exists := gCampaignByName.Get(name)
+func GetCampaignIDFromTitle(name string) (CampaignID, bool) {
+	found, exists := gCampaignsByTitle.Get(name)
 	if !exists {
-		return -1, false
+		return 0, false
 	}
 	return found.(*Campaign).id, true
 }
 
 // CreateCampaign creates a new campaign with a user-specified title,
 // description, goal, and days.
-func CreateCampaign(title, desc string, goal std.Coin, days int) CampaignID {
+func CreateCampaign(title, desc string, goal, days int) CampaignID {
 	std.AssertOriginCall()
 
 	caller := std.GetOrigCaller()
@@ -26,10 +26,10 @@ func CreateCampaign(title, desc string, goal std.Coin, days int) CampaignID {
 		panic("unauthorized")
 	}
 
-	prefix := "/r/demo/campaigns:" + title
+	url := "/r/demo/campaigns:" + title
 	cid := incCampaignCount()
 
-	campaign := newCampaign(cid, title, prefix, desc, goal, days)
+	campaign := newCampaign(caller, cid, title, url, desc, goal, days)
 	cidkey := campaignIDKey(cid)
 
 	gCampaigns.Set(cidkey, campaign)
@@ -39,11 +39,11 @@ func CreateCampaign(title, desc string, goal std.Coin, days int) CampaignID {
 }
 
 // MakePledge pledges a user-specified amount to a user-specified campaign.
-func MakePledge(cid campaignIDKey, amount std.Coin) PledgeID {
+func MakePledge(cid CampaignID, amount int64, why string) PledgeID {
 	std.AssertOriginCall()
 
-	if amount.IsNegative() {
-		panic("negative amount")
+	if amount <= 0 {
+		panic("amount must be positive")
 	}
 
 	caller := std.GetOrigCaller()
@@ -61,7 +61,7 @@ func MakePledge(cid campaignIDKey, amount std.Coin) PledgeID {
 		panic("campaign does not exist")
 	}
 
-	return campaign.addPledge(caller, amount)
+	return campaign.addPledge(caller, amount, why)
 }
 
 // EditCampaign edits a user-specified campaign's title and/or description.
@@ -77,7 +77,7 @@ func EditCampaign(cid CampaignID, title, description string) {
 	}
 
 	caller := std.GetOrigCaller()
-	if !campaign.HasPermission(caller, EditPermission) {
+	if !campaign.hasPermission(caller, EditPermission) {
 		panic("unauthorized")
 	}
 

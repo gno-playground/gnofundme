@@ -1,12 +1,15 @@
 package gnofundme
 
 import (
+	"regexp"
 	"std"
 	"strconv"
 	"time"
 
 	"gno.land/p/demo/avl"
 )
+
+var reTitle = regexp.MustCompile(`^[a-z]+[_a-z0-9]{2,29}$`)
 
 // CampaignID is a unique identifier for a campaign.
 type CampaignID uint64
@@ -17,30 +20,38 @@ func (cid CampaignID) String() string {
 
 // Campaign represents a GoFundMe-like crowdfunding campaign.
 //
-// Notably, like GoFundMe, the creator of the campaign is not required to
-// meet their goal in order to receive the pledged funds: at the end of the
-// specified duration, all funds are transferred to the creator.
+// Like GoFundMe, the creator of the campaign is not required to meet their
+// goal in order to receive the pledged funds: at the end of the specified
+// duration, all funds are transferred to the creator.
+//
+// Also, notable, there is no intermediary between the creator and the backers.
+// Pledged funds are transferred directly to the creator.
 type Campaign struct {
 	id            CampaignID  // The campaign's unique ID.
 	creator       std.Address // The address of the campaign creator.
 	title         string      // The title of the campaign.
-	prefix        string      // The prefix of the campaign's URL.
+	url           string      // The prefix of the campaign's URL.
 	description   string      // A description of the campaign.
-	goal          std.Coin    // The amount the campaign is trying to raise.
-	pledged       std.Coin    // The amount pledged to the campaign so far.
+	goal          int         // The amount the campaign is trying to raise.
+	pledged       int64       // The amount pledged to the campaign so far.
 	start         time.Time   // The time the campaign was created.
 	end           time.Time   // The time the campaign will end.
 	pledges       avl.Tree    // PledgeID -> Pledge
 	pledgeCounter uint64      // increments Pledge.id
 	updatedAt     time.Time   // The time the campaign was last updated.
+	isActive      bool        // Whether the campaign is active.
 }
 
 // newCampaign creates a new campaign.
-func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string, goal std.Coin, days int) *Campaign {
+func newCampaign(creator std.Address, id CampaignID, title, url, desc string, goal, days int) *Campaign {
+	if !reTitle.MatchString(title) {
+		panic("invalid tile: " + title)
+	}
+
 	// TODO: should we put restrictions on `title` and `description`?
 	//
 	// i.e., min/max length?
-	if exists := gCampaigns.Has(id); exists {
+	if exists := gCampaignsByTitle.Has(title); exists {
 		panic("campaign already exists")
 	}
 
@@ -49,7 +60,7 @@ func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string,
 		id:          id,
 		creator:     creator,
 		title:       title,
-		prefix:      prefix,
+		url:         url,
 		description: desc,
 		goal:        goal,
 		pledged:     0,
@@ -59,13 +70,18 @@ func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string,
 }
 
 // addPledge adds a pledge to the campaign.
-func (c *Campaign) addPledge(backer std.Address, amount std.Coin) PledgeID {
-	c.pledged = c.pledged.Add(amount)
+func (c *Campaign) addPledge(backer std.Address, amount int64, why string) PledgeID {
+	c.pledged += amount
 
 	pid := c.incGetPledgeID()
 	key := pledgeIDKey(pid)
 
-	c.pledges.Set(key, newPledge(pid, user, amount))
+	sendCoins := std.Coins{std.Coin{Denom: "ugnot", Amount: amount}}
+
+	banker := std.GetBanker(std.BankerTypeRealmSend)
+	banker.SendCoins(backer, c.creator, sendCoins)
+
+	c.pledges.Set(key, newPledge(pid, backer, amount, why))
 	return pid
 }
 

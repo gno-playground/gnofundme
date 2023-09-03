@@ -1,8 +1,6 @@
 package gnofundme
 
 import (
-	"regexp"
-
 	"gno.land/p/demo/avl"
 )
 

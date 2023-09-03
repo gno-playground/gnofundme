@@ -13,5 +13,14 @@ package gnofundme
 // - [ ] The campaign's status (open or closed)
 // - [ ] The campaign's contributors (leaderboard-style?)
 func Render(path string) string {
+	if path == "" {
+		str := "These are all the campaigns of this realm:\n\n"
+		gCampaigns.Iterate("", "", func(key string, value interface{}) bool {
+			campaign := value.(*Campaign)
+			str += " * [" + campaign.url + "](" + campaign.url + ")\n"
+			return false
+		})
+		return str
+	}
 	return "TODO"
 }

@@ -10,14 +10,14 @@ import (
 )
 
 func getCampaign(cid CampaignID) *Campaign {
-	key := campaignIDKey(bid)
+	key := campaignIDKey(cid)
 
-	found, exists := gCampaigns.Get(bidkey)
+	found, exists := gCampaigns.Get(key)
 	if !exists {
 		return nil
 	}
 
-	campaign_ := found.(*Campaign)
+	campaign := found.(*Campaign)
 	return campaign
 }
 
@@ -36,10 +36,10 @@ func usernameOf(addr std.Address) string {
 }
 
 func campaignIDKey(cid CampaignID) string {
-	return padZero(uint64(bid), 10)
+	return padZero(uint64(cid), 10)
 }
 
-func pledgeIDKey(pid CampaignID) string {
+func pledgeIDKey(pid PledgeID) string {
 	return padZero(uint64(pid), 10)
 }
 

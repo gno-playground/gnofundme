@@ -2,11 +2,16 @@ package gnofundme
 
 import (
 	"std"
+	"strconv"
 	"time"
 )
 
 // PledgeID is a unique identifier for a campaign.
 type PledgeID uint64
+
+func (pid PledgeID) String() string {
+	return strconv.Itoa(int(pid))
+}
 
 // Pledge represents a user's pledge to a campaign.
 type Pledge struct {

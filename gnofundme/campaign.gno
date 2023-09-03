@@ -58,16 +58,14 @@ func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string,
 }
 
 // addPledge adds a pledge to the campaign.
-func (c *Campaign) addPledge(backer std.Address, amount int) *Pledge {
+func (c *Campaign) addPledge(backer std.Address, amount int) PledgeID {
 	c.pledged += amount
 
 	pid := c.incGetPledgeID()
 	key := pledgeIDKey(pid)
 
-	pledge := newPledge(pid, user, amount)
-	c.pledges.Set(key, pledge)
-
-	return pledge
+	c.pledges.Set(key, newPledge(pid, user, amount))
+	return pid
 }
 
 // incGetPledgeID increments the pledge counter and returns the new value.

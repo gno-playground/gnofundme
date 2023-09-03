@@ -29,7 +29,7 @@ func CreateCampaign(title, desc string, goal, days int) CampaignID {
 }
 
 // Pledge pledges a user-specified amount to a user-specified campaign.
-func Pledge(cid campaignIDKey, amount int) *Pledge {
+func Pledge(cid campaignIDKey, amount int) PledgeID {
 	std.AssertOriginCall()
 
 	if amount < 0 {

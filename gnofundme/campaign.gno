@@ -60,7 +60,7 @@ func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string,
 
 // addPledge adds a pledge to the campaign.
 func (c *Campaign) addPledge(backer std.Address, amount std.Coin) PledgeID {
-	c.pledged += amount
+	c.pledged = c.pledged.Add(amount)
 
 	pid := c.incGetPledgeID()
 	key := pledgeIDKey(pid)

@@ -42,7 +42,7 @@ func CreateCampaign(title, desc string, goal std.Coin, days int) CampaignID {
 func MakePledge(cid campaignIDKey, amount std.Coin) PledgeID {
 	std.AssertOriginCall()
 
-	if amount < 0 {
+	if amount.IsNegative() {
 		panic("negative amount")
 	}
 

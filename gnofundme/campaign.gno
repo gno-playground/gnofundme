@@ -4,6 +4,8 @@ import (
 	"std"
 	"strconv"
 	"time"
+
+	"gno.land/p/demo/avl"
 )
 
 // CampaignID is a unique identifier for a campaign.
@@ -28,6 +30,7 @@ type Campaign struct {
 	pledged     int         // The amount pledged to the campaign so far.
 	start       time.Time   // The time the campaign was created.
 	end         time.Time   // The time the campaign will end.
+	pledges     avl.Tree    // User -> Amount
 }
 
 // newCampaign creates a new campaign.
@@ -51,4 +54,16 @@ func newCampaign(creator std.Address, id CampaignID, title, prefix, desc string,
 		start:       start,
 		end:         start.AddDate(0, 0, days),
 	}
+}
+
+func (c *Campaign) pledge(user string, amount int) {
+	c.pledged += amount
+	// Check if the user has already pledged to this campaign. If so, add the
+	// new amount to their existing pledge.
+	//
+	// TODO: should we limit users to one pledge per campaign?
+	if exists := c.pledges.Has(user); exists {
+		amount += c.pledges.Get(user).(int)
+	}
+	c.pledges.Set(user, amount)
 }

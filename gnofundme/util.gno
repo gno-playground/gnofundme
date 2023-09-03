@@ -9,6 +9,18 @@ import (
 	"gno.land/r/demo/users"
 )
 
+func getCampaign(cid CampaignID) *Campaign {
+	key := campaignIDKey(bid)
+
+	found, exists := gCampaigns.Get(bidkey)
+	if !exists {
+		return nil
+	}
+
+	campaign_ := found.(*Campaign)
+	return campaign
+}
+
 func incCampaignCount() BoardID {
 	gCampaignCount++
 	return BoardID(gCampaignCount)

@@ -2,9 +2,12 @@ package gnofundme
 
 import (
 	"std"
-	"strconv"
+
+	"gno.land/p/demo/ufmt"
 )
 
+// CreateCampaign creates a new campaign with a user-specified title,
+// description, goal, and days.
 func CreateCampaign(title, desc string, goal, days int) CampaignID {
 	std.AssertOriginCall()
 
@@ -23,4 +26,30 @@ func CreateCampaign(title, desc string, goal, days int) CampaignID {
 	gCampaignsByTitle.Set(title, campaign)
 
 	return cid
+}
+
+// Pledge pledges a user-specified amount to a user-specified campaign.
+func Pledge(cid campaignIDKey, amount int) {
+	std.AssertOriginCall()
+
+	if amount < 0 {
+		panic("negative amount")
+	}
+
+	caller := std.GetOrigCaller()
+	if usernameOf(caller) == "" {
+		if !checkAnonFee() {
+			panic(ufmt.Sprintf(
+				"please register, %d (minimum fee) is required if anonymous",
+				gDefaultAnonFee,
+			))
+		}
+	}
+
+	campaign := getCampaign(cid)
+	if campaign == nil {
+		panic("campaign not exist")
+	}
+
+	campaign.pledge(usernameOf(caller), amount)
 }

@@ -16,17 +16,19 @@ func (pid PledgeID) String() string {
 // Pledge represents a user's pledge to a campaign.
 type Pledge struct {
 	id     PledgeID
-	amount std.Coin
+	amount int64
 	backer std.Address
 	when   time.Time
+	why    string
 }
 
 // newPledge creates a new pledge.
-func newPledge(id PledgeID, backer std.Address, amount std.Coin) *Pledge {
+func newPledge(id PledgeID, backer std.Address, amount int64, why string) *Pledge {
 	return &Pledge{
 		id:     id,
 		amount: amount,
 		backer: backer,
 		when:   time.Now(),
+		why:    why,
 	}
 }

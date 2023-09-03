@@ -48,7 +48,7 @@ func Pledge(cid campaignIDKey, amount int) {
 
 	campaign := getCampaign(cid)
 	if campaign == nil {
-		panic("campaign not exist")
+		panic("campaign does not exist")
 	}
 
 	campaign.pledge(usernameOf(caller), amount)

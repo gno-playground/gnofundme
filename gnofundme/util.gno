@@ -21,9 +21,9 @@ func getCampaign(cid CampaignID) *Campaign {
 	return campaign
 }
 
-func incCampaignCount() BoardID {
+func incCampaignCount() CampaignID {
 	gCampaignCount++
-	return BoardID(gCampaignCount)
+	return CampaignID(gCampaignCount)
 }
 
 func usernameOf(addr std.Address) string {

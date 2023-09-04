@@ -11,13 +11,13 @@ individuals can pledge donations to it.
     </tr>
     <tr>
         <td width="50%">
-            <a href="https://github.com/jdkato/gnofundme/assets/8785025/75b30313-2ada-4c27-9bed-ed16fd12ab65">
-                <img src="https://github.com/jdkato/gnofundme/assets/8785025/75b30313-2ada-4c27-9bed-ed16fd12ab65" width="100%">
+            <a href="https://github.com/jdkato/gnofundme/assets/8785025/30eb99c0-d16e-45c5-b63a-20c213b1f79e">
+                <img src="https://github.com/jdkato/gnofundme/assets/8785025/30eb99c0-d16e-45c5-b63a-20c213b1f79e" width="100%">
             </a>
         </td>
         <td width="50%">
-            <a href="https://github.com/jdkato/gnofundme/assets/8785025/cde6a801-33af-45df-b286-517b0f1f9748">
-                <img src="https://github.com/jdkato/gnofundme/assets/8785025/cde6a801-33af-45df-b286-517b0f1f9748" width="100%">
+            <a href="https://github.com/jdkato/gnofundme/assets/8785025/690f13b9-2bd4-4d36-a304-08b7ea19e99d">
+                <img src="https://github.com/jdkato/gnofundme/assets/8785025/690f13b9-2bd4-4d36-a304-08b7ea19e99d" width="100%">
             </a>
         </td>
     </tr>

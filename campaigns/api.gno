@@ -29,7 +29,10 @@ func Launch(title, desc string, goal, days int) CampaignID {
 	url := "/r/demo/campaigns:" + title
 	cid := incCampaignCount()
 
-	campaign := newCampaign(caller, cid, title, url, desc, goal, days)
+	campaign, err := newCampaign(caller, cid, title, url, desc, goal, days)
+	if err != nil {
+		panic(err)
+	}
 	cidkey := campaignIDKey(cid)
 
 	gCampaigns.Set(cidkey, campaign)
@@ -41,10 +44,6 @@ func Launch(title, desc string, goal, days int) CampaignID {
 // MakePledge pledges a user-specified amount to a user-specified campaign.
 func MakePledge(cid CampaignID, amount int64, why string) PledgeID {
 	std.AssertOriginCall()
-
-	if amount <= 0 {
-		panic("amount must be positive")
-	}
 
 	caller := std.GetOrigCaller()
 	if usernameOf(caller) == "" {
@@ -59,25 +58,23 @@ func MakePledge(cid CampaignID, amount int64, why string) PledgeID {
 	campaign := getCampaign(cid)
 	if campaign == nil {
 		panic("campaign does not exist")
-	} else if campaign.isExpired() {
-		panic("campaign has expired")
 	}
 
-	return campaign.addPledge(caller, amount, why)
+	pid, err := campaign.addPledge(caller, amount, why)
+	if err != nil {
+		panic(err)
+	}
+
+	return pid
 }
 
 // EditCampaign edits a user-specified campaign's title and/or description.
 func EditCampaign(cid CampaignID, title, description string) {
 	std.AssertOriginCall()
-	if title == "" && description == "" {
-		panic("both title and description cannot be empty")
-	}
 
 	campaign := getCampaign(cid)
 	if campaign == nil {
 		panic("campaign does not exist")
-	} else if campaign.isExpired() {
-		panic("campaign has expired")
 	}
 
 	caller := std.GetOrigCaller()
@@ -85,7 +82,10 @@ func EditCampaign(cid CampaignID, title, description string) {
 		panic("unauthorized")
 	}
 
-	campaign.update(title, description)
+	err := campaign.update(title, description)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // WithdrawFunds withdraws the funds from a user-specified campaign.
@@ -95,10 +95,6 @@ func WithdrawFunds(cid CampaignID) {
 	campaign := getCampaign(cid)
 	if campaign == nil {
 		panic("campaign does not exist")
-	} else if !campaign.isExpired() {
-		panic("campaign is still active")
-	} else if campaign.withdrawn {
-		panic("funds already withdrawn")
 	}
 
 	caller := std.GetOrigCaller()
@@ -106,7 +102,10 @@ func WithdrawFunds(cid CampaignID) {
 		panic("unauthorized")
 	}
 
-	campaign.withdrawFunds()
+	err := campaign.withdrawFunds()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func CancelCampaign(cid CampaignID) {
@@ -115,8 +114,6 @@ func CancelCampaign(cid CampaignID) {
 	campaign := getCampaign(cid)
 	if campaign == nil {
 		panic("campaign does not exist")
-	} else if !campaign.isActive() {
-		panic("campaign is not active")
 	}
 
 	caller := std.GetOrigCaller()
@@ -124,5 +121,8 @@ func CancelCampaign(cid CampaignID) {
 		panic("unauthorized")
 	}
 
-	campaign.cancel()
+	err := campaign.cancel()
+	if err != nil {
+		panic(err)
+	}
 }

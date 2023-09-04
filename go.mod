@@ -1,4 +1,4 @@
-module github.com/jdkato/gnofundme
+module github.com/jdkato/campaigns
 
 go 1.20
 

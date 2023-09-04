@@ -2,7 +2,7 @@
 
 A [Gno][1] smart contract ("realm") implementing campaign-based crowdfunding:
 a individual creates a campaign with a purpose and funding goal, and other 
-individuals can pledge donatations to it.
+individuals can pledge donations to it.
 
 <table>
     <tr>

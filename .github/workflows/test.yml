@@ -1,0 +1,29 @@
+name: gno test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      - name: Set up Gno
+        run: go install github.com/gnolang/gno/gnovm/cmd/gno@latest
+
+      - name: Clone GuillaumeFalourd/poc-github-actions
+        uses: GuillaumeFalourd/clone-github-repo-action@v2.1
+        with:
+          depth: 1
+          owner: 'gnolang'
+          repository: 'gno'
+
+      - name: Test
+        run: gno test -verbose campaigns
+        env:
+          GNOROOT: ${{ github.workspace }}/gno

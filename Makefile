@@ -8,15 +8,15 @@ create:
 	--pkgpath "gno.land/r/demo/campaigns" \
 	--pkgdir "$(PWD)/campaigns" \
 	--deposit "100000000ugnot" --gas-fee "1000000ugnot" \
-	--gas-wanted "4000000" --broadcast --chainid dev \
+	--gas-wanted "5000000" --broadcast --chainid dev \
 	--remote localhost:26657 \
 	jdkey
 
 add:
 	gnokey maketx call \
-	--pkgpath "gno.land/r/demo/campaigns" --func "CreateCampaign" \
-	--args "init" --args "The first campaign" --args "100" --args "30" \
-	--gas-fee "1000000ugnot" --gas-wanted "2000000" \
+	--pkgpath "gno.land/r/demo/campaigns" --func "Launch" \
+	--args "gnols" --args "An implementation of the Language Server Protocol (LSP) for the Gno programming language." --args "150" --args "30" \
+	--gas-fee "1000000ugnot" --gas-wanted "5000000" \
 	--broadcast --chainid dev --remote localhost:26657 \
 	--send "200000000ugnot" \
 	jdkey

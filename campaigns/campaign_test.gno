@@ -2,17 +2,21 @@ package campaigns
 
 import "testing"
 
-var testCampaign, _ = newCampaign(
-	"",
-	CampaignID(1),
-	"My Campaign",
-	"Really cool campaign.",
-	"test",
-	150,
-	30,
-)
-
 func TestCampaignActions(t *testing.T) {
+	testCampaign, err := newCampaign(
+		"",
+		CampaignID(1),
+		"gnols",
+		"/r/demo/campaigns:gnols",
+		"An implementation of the Language Server Protocol (LSP) for the Gno programming language.",
+		150,
+		30,
+	)
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	pid, err := testCampaign.addPledge("", -1, "I love this campaign!")
 	if err == nil {
 		t.Errorf("expected error for negative pledge amount")

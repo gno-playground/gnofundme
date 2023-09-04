@@ -15,7 +15,7 @@ gnokey maketx addpkg \
     --pkgpath "gno.land/r/demo/campaigns" \
     --pkgdir "$(PWD)/campaigns" \
     --deposit "100000000ugnot" --gas-fee "1000000ugnot" \
-    --gas-wanted "4000000" --broadcast --chainid dev \
+    --gas-wanted "5000000" --broadcast --chainid dev \
     --remote localhost:26657 \
     YOUR_KEY
 ```
@@ -26,7 +26,7 @@ gnokey maketx addpkg \
 gnokey maketx call \
     --pkgpath "gno.land/r/demo/campaigns" --func "Launch" \
     --args "a_title" --args "some_description" --args "100" --args "30" \
-    --gas-fee "1000000ugnot" --gas-wanted "2000000" \
+    --gas-fee "1000000ugnot" --gas-wanted "5000000" \
     --broadcast --chainid dev --remote localhost:26657 \
     --send "200000000ugnot" \
     YOUR_KEY

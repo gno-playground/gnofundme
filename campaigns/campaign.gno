@@ -3,7 +3,6 @@ package campaigns
 import (
 	"regexp"
 	"std"
-	"strconv"
 	"time"
 
 	"gno.land/p/demo/avl"
@@ -12,35 +11,35 @@ import (
 
 var reTitle = regexp.MustCompile(`^[a-z]+[_a-z0-9]{2,29}$`)
 
-// CampaignID is a unique identifier for a campaign.
-type CampaignID uint64
+const (
+	Open CampaignStatus = iota
+	Closed
+	Canceled
+)
 
-func (cid CampaignID) String() string {
-	return strconv.Itoa(int(cid))
-}
-
-// Campaign represents a GoFundMe-like crowdfunding campaign.
+// Campaign represents a crowdfunding campaign.
 //
-// Like GoFundMe, the creator of the campaign is not required to meet their
-// goal in order to receive the pledged funds: at the end of the specified
-// duration, all funds are transferred to the creator.
+// Notably, like GoFundMe, the creator of the campaign is not required to meet
+// their goal in order to receive the pledged funds: at the end of the
+// specified duration, all funds are transferred to the creator.
 //
-// Also, notable, there is no intermediary between the creator and the backers.
-// Pledged funds are transferred directly to the creator.
+// If the creator cancels the campaign before it ends, all funds are returned
+// to the backers.
 type Campaign struct {
-	id            CampaignID  // The campaign's unique ID.
-	creator       std.Address // The address of the campaign creator.
-	title         string      // The title of the campaign.
-	url           string      // The prefix of the campaign's URL.
-	description   string      // A description of the campaign.
-	goal          int         // The amount the campaign is trying to raise.
-	pledged       int64       // The amount pledged to the campaign so far.
-	start         time.Time   // The time the campaign was created.
-	end           time.Time   // The time the campaign will end.
-	pledges       avl.Tree    // PledgeID -> Pledge
-	pledgeCounter uint64      // increments Pledge.id
-	updatedAt     time.Time   // The time the campaign was last updated.
-	isActive      bool        // Whether the campaign is active.
+	id            CampaignID     // The campaign's unique ID.
+	creator       std.Address    // The address of the campaign creator.
+	title         string         // The title of the campaign.
+	url           string         // The prefix of the campaign's URL.
+	description   string         // A description of the campaign.
+	goal          int            // The amount the campaign is trying to raise.
+	pledged       int64          // The amount pledged to the campaign so far.
+	start         time.Time      // The time the campaign was created.
+	end           time.Time      // The time the campaign will end.
+	pledges       *avl.Tree      // PledgeID -> Pledge
+	pledgeCounter uint64         // increments Pledge.id
+	updatedAt     time.Time      // The time the campaign was last updated.
+	status        CampaignStatus // Whether the campaign is active.
+	withdrawn     bool           // Whether the funds have been withdrawn.
 }
 
 // newCampaign creates a new campaign.
@@ -67,10 +66,14 @@ func newCampaign(creator std.Address, id CampaignID, title, url, desc string, go
 		pledged:     0,
 		start:       start,
 		end:         start.AddDate(0, 0, days),
+		status:      Open,
+		pledges:     avl.NewTree(),
 	}
 }
 
 // addPledge adds a pledge to the campaign.
+//
+// The funds are transferred from the backer to the package's address.
 func (c *Campaign) addPledge(backer std.Address, amount int64, why string) PledgeID {
 	c.pledged += amount
 
@@ -78,14 +81,27 @@ func (c *Campaign) addPledge(backer std.Address, amount int64, why string) Pledg
 	key := pledgeIDKey(pid)
 
 	sendCoins := std.Coins{std.Coin{Denom: "ugnot", Amount: amount}}
+	pkgaddr := std.GetOrigPkgAddr()
 
 	banker := std.GetBanker(std.BankerTypeRealmSend)
-	banker.SendCoins(backer, c.creator, sendCoins)
+	banker.SendCoins(backer, pkgaddr, sendCoins)
 
 	c.pledges.Set(key, newPledge(pid, backer, amount, why))
 	return pid
 }
 
+// withdrawFunds withdraws the funds from the campaign.
+func (c *Campaign) withdrawFunds() {
+	sendCoins := std.Coins{std.Coin{Denom: "ugnot", Amount: c.pledged}}
+	pkgaddr := std.GetOrigPkgAddr()
+
+	banker := std.GetBanker(std.BankerTypeRealmSend)
+	banker.SendCoins(pkgaddr, c.creator, sendCoins)
+
+	c.withdrawn = true
+}
+
+// update updates the campaign's title and/or description.
 func (c *Campaign) update(title, description string) {
 	if title != "" {
 		c.title = title
@@ -102,19 +118,10 @@ func (c *Campaign) incGetPledgeID() PledgeID {
 	return PledgeID(c.pledgeCounter)
 }
 
-// hasPermission returns whether the given address has the given permission.
-//
-// TODO: should there be a 'delete' permission?
-func (c *Campaign) hasPermission(addr std.Address, perm Permission) bool {
-	if c.creator != addr {
-		return false
-	}
-	switch perm {
-	case EditPermission:
-		return true
-	default:
-		return false
-	}
+// hasPermission returns whether the address has permission to perform an
+// action on the campaign.
+func (c *Campaign) hasPermission(addr std.Address) bool {
+	return c.creator == addr
 }
 
 // isExpired returns whether the campaign has expired.
@@ -122,14 +129,37 @@ func (c *Campaign) isExpired() bool {
 	return time.Now().After(c.end)
 }
 
+// isActive returns whether the campaign is active.
+func (c *Campaign) isActive() bool {
+	return !c.isExpired() && c.status == Open
+}
+
+// cancel cancels the campaign and returns all funds to the backers.
+func (c *Campaign) cancel() {
+	c.status = Canceled
+	c.refund()
+}
+
+// refund returns all funds to the backers.
+func (c *Campaign) refund() {
+	c.withdrawn = true
+	c.pledges.Iterate("", "", func(key string, value interface{}) bool {
+		p := value.(*Pledge)
+
+		sendCoins := std.Coins{std.Coin{Denom: "ugnot", Amount: p.amount}}
+		pkgaddr := std.GetOrigPkgAddr()
+
+		banker := std.GetBanker(std.BankerTypeRealmSend)
+		banker.SendCoins(pkgaddr, p.backer, sendCoins)
+
+		return true
+	})
+}
+
 // render returns a Markdown-formatted representation of the campaign.
 //
 // TODO: The campaign's contributors (leaderboard-style?)
 func (c *Campaign) render() string {
-	status := "open"
-	if c.isExpired() {
-		status = "closed"
-	}
 	return ufmt.Sprintf(
 		"# %s\n\n"+
 			"> %s\n\n"+
@@ -144,6 +174,6 @@ func (c *Campaign) render() string {
 		c.pledged,
 		c.end.Format("2006-01-02"),
 		c.creator,
-		status,
+		c.status.String(),
 	)
 }

@@ -1,4 +1,4 @@
-package gnofundme
+package campaigns
 
 import (
 	"strings"
@@ -8,15 +8,15 @@ import (
 
 // Render returns a Markdown-formatted representation of the GnoFundMe realm.
 func Render(path string) string {
+	// root landing page
+	//
+	// /r/demo/gnofundme
+	if path == "" {
+		return renderRealm()
+	}
+
 	parts := strings.Split(path, "/")
 	switch len(parts) {
-	case 0:
-		// root landing page
-		//
-		// /r/demo/gnofundme
-		if path == "" {
-			return renderRealm()
-		}
 	case 1:
 		// campaign landing page
 		//
@@ -24,9 +24,11 @@ func Render(path string) string {
 		//
 		// title == campaigns:TITLE
 		return renderCampaign(parts[0])
-	default:
-		return "unrecognized path " + path
+
+		// TODO: render pledge page?
 	}
+
+	return ufmt.Sprintf("unrecognized path, '%s'", path)
 }
 
 // renderRealm returns a Markdown-formatted representation of the GnoFundMe
@@ -46,9 +48,9 @@ func renderRealm() string {
 // renderCampaign returns a Markdown-formatted representation of the GnoFundMe
 // campaign.
 func renderCampaign(title string) string {
-	campaign := gCampaigns.Get(title)
-	if campaign == nil {
+	found, ok := gCampaignsByTitle.Get(title)
+	if !ok {
 		return ufmt.Sprintf("campaign not found, '%s'", title)
 	}
-	return campaign.render()
+	return found.(*Campaign).render()
 }

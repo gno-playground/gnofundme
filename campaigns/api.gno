@@ -1,4 +1,4 @@
-package gnofundme
+package campaigns
 
 import (
 	"std"

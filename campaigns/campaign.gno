@@ -1,4 +1,4 @@
-package gnofundme
+package campaigns
 
 import (
 	"regexp"
@@ -124,14 +124,7 @@ func (c *Campaign) isExpired() bool {
 
 // render returns a Markdown-formatted representation of the campaign.
 //
-// - The campaign's title
-// - The campaign's description
-// - The campaign's goal amount
-// - The campaign's current amount pledged
-// - The campaign's deadline
-// - The campaign's creator
-// - The campaign's status (open or closed)
-// - The campaign's contributors (leaderboard-style?)
+// TODO: The campaign's contributors (leaderboard-style?)
 func (c *Campaign) render() string {
 	status := "open"
 	if c.isExpired() {
@@ -139,12 +132,12 @@ func (c *Campaign) render() string {
 	}
 	return ufmt.Sprintf(
 		"# %s\n\n"+
-			"%s\n\n"+
-			"Goal: %d\n"+
-			"Pledged: %d\n"+
-			"Deadline: %s\n"+
-			"Creator: %s\n"+
-			"Status: %s\n",
+			"> %s\n\n"+
+			"* Goal: %d\n"+
+			"* Pledged: %d\n"+
+			"* Deadline: %s\n"+
+			"* Creator: `%s`\n"+
+			"* Status: `%s`\n",
 		c.title,
 		c.description,
 		c.goal,

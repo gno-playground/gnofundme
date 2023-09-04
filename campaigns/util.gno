@@ -1,5 +1,4 @@
-// Private utility functions.
-package gnofundme
+package campaigns
 
 import (
 	"std"

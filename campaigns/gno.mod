@@ -1,4 +1,4 @@
-module gno.land/r/demo/gnofundme
+module gno.land/r/demo/campaigns
 
 require (
     "gno.land/p/demo/ufmt" v0.0.0-latest

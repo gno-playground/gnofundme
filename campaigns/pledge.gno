@@ -1,9 +1,11 @@
-package gnofundme
+package campaigns
 
 import (
 	"std"
 	"strconv"
 	"time"
+
+	"gno.land/p/demo/ufmt"
 )
 
 // PledgeID is a unique identifier for a campaign.
@@ -35,7 +37,7 @@ func newPledge(id PledgeID, backer std.Address, amount int64, why string) *Pledg
 
 // render returns a Markdown-formatted representation of a pledge.
 func (p *Pledge) render() string {
-	return fmt.Sprintf(
+	return ufmt.Sprintf(
 		"**%s** pledged **%d** to **%s** on **%s**:\n\n%s",
 		p.backer,
 		p.amount,

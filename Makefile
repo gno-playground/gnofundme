@@ -1,7 +1,7 @@
 .PHONY: build add create auth
 
 build:
-	gno build /Users/jdkato/Documents/Code/Gno/gno/examples/gno.land/r/demo/campaigns
+	gno build ${GNOROOT}/examples/gno.land/r/demo/campaigns
 
 create:
 	gnokey maketx addpkg \

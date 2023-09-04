@@ -59,6 +59,8 @@ func MakePledge(cid CampaignID, amount int64, why string) PledgeID {
 	campaign := getCampaign(cid)
 	if campaign == nil {
 		panic("campaign does not exist")
+	} else if campaign.isExpired() {
+		panic("campaign has expired")
 	}
 
 	return campaign.addPledge(caller, amount, why)
@@ -74,6 +76,8 @@ func EditCampaign(cid CampaignID, title, description string) {
 	campaign := getCampaign(cid)
 	if campaign == nil {
 		panic("campaign does not exist")
+	} else if campaign.isExpired() {
+		panic("campaign has expired")
 	}
 
 	caller := std.GetOrigCaller()

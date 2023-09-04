@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gno.land/p/demo/avl"
+	"gno.land/p/demo/ufmt"
 )
 
 var reTitle = regexp.MustCompile(`^[a-z]+[_a-z0-9]{2,29}$`)
@@ -114,4 +115,42 @@ func (c *Campaign) hasPermission(addr std.Address, perm Permission) bool {
 	default:
 		return false
 	}
+}
+
+// isExpired returns whether the campaign has expired.
+func (c *Campaign) isExpired() bool {
+	return time.Now().After(c.end)
+}
+
+// render returns a Markdown-formatted representation of the campaign.
+//
+// - The campaign's title
+// - The campaign's description
+// - The campaign's goal amount
+// - The campaign's current amount pledged
+// - The campaign's deadline
+// - The campaign's creator
+// - The campaign's status (open or closed)
+// - The campaign's contributors (leaderboard-style?)
+func (c *Campaign) render() string {
+	status := "open"
+	if c.isExpired() {
+		status = "closed"
+	}
+	return ufmt.Sprintf(
+		"# %s\n\n"+
+			"%s\n\n"+
+			"Goal: %d\n"+
+			"Pledged: %d\n"+
+			"Deadline: %s\n"+
+			"Creator: %s\n"+
+			"Status: %s\n",
+		c.title,
+		c.description,
+		c.goal,
+		c.pledged,
+		c.end.Format("2006-01-02"),
+		c.creator,
+		status,
+	)
 }

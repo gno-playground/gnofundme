@@ -32,3 +32,15 @@ func newPledge(id PledgeID, backer std.Address, amount int64, why string) *Pledg
 		why:    why,
 	}
 }
+
+// render returns a Markdown-formatted representation of a pledge.
+func (p *Pledge) render() string {
+	return fmt.Sprintf(
+		"**%s** pledged **%d** to **%s** on **%s**:\n\n%s",
+		p.backer,
+		p.amount,
+		p.id,
+		p.when,
+		p.why,
+	)
+}

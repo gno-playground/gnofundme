@@ -21,7 +21,6 @@ add:
 	--send "200000000ugnot" \
 	jdkey
 
-
 pledge:
 	gnokey maketx call \
 	--pkgpath "gno.land/r/demo/campaigns" --func "MakePledge" \
@@ -30,7 +29,6 @@ pledge:
 	--broadcast --chainid dev --remote localhost:26657 \
 	--send "200000000ugnot" \
 	jdkey
-
 
 auth:
 	gnokey maketx call \

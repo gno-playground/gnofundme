@@ -14,12 +14,6 @@ import (
 // reTitle is the regular expression for a campaign's title.
 var reTitle = regexp.MustCompile(`^[a-z]+[_a-z0-9]{2,29}$`)
 
-const (
-	Open CampaignStatus = iota
-	Closed
-	Canceled
-)
-
 // maxDescriptionLength is the maximum length of a campaign's description.
 //
 // This is shown in the campaign's Markdown representation.

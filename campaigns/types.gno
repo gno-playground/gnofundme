@@ -2,6 +2,12 @@ package campaigns
 
 import "strconv"
 
+const (
+	Open CampaignStatus = iota
+	Closed
+	Canceled
+)
+
 // CampaignID is a unique identifier for a campaign.
 type CampaignID uint64
 
